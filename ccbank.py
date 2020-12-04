@@ -3,11 +3,6 @@ import random
 #fazer verificação da senha | extrato | fazer opção de alterar dados (renda e etc)
 #fazer abstração de codigo na parte de getClient()
 
-admin_user = ''
-admin_password = ''
-
-clients = []
-
 class Client:
     name = ''
     phone = ''
@@ -19,10 +14,19 @@ class Client:
     password = ''
     purchases = []
 
+    def addPurchase(self, obj):
+        purchases.append(obj)
+
 class Purchase:
     category = ''
     value = 0.0
-           
+    date = ''
+
+admin_user = ''
+admin_password = ''
+
+clients = []
+
 #verifica se o usuário deseja realizar uma operação bancária
 def operation():
     operation = input('\nVocê deseja realizar uma operação (S/N): ').upper()
@@ -150,8 +154,9 @@ def getClient(card, psw):
         if obj.credit_card == card:
             if obj.password == psw:
                 return obj
+    return False
             
-#o usuario digitará os seus custos mensais
+#registra os custos mensais do cliente
 def monthlyPurchases():
 
     #enquanto o user não digitar o nº do cartão e/ou a senha corretos, o programa continuará repetindo
@@ -169,33 +174,57 @@ def monthlyPurchases():
 
                 purchase = Purchase()
 
-                purchase.category = input('\nCategoria (Mercado, Padaria...): ')
+                purchase.category = input('\nCategoria: ')
 
                 while True:
-                    purchase.value = abs(float(input('\nValor: R$ ')))
+                    purchase.value = abs(float(input('Valor: R$')))
 
-                    if client.available_credit < purchase.value:
-                        print('\nCrédito Insuficiente!')
-                    else:
+                    if client.available_credit > purchase.value:
                         client.available_credit += -purchase.value
+
+                        purchase.date = input('Data: ')
                         break
+
+                    else:
+                        print('\nCrédito Insuficiente!')
+                        
                 
                 print(f'\nCrédito Atual: R$ {client.available_credit:.2f}')
 
+                print(client.name)
                 client.purchases.append(purchase)
 
                 if input('\nDeseja adicionar mais algum gasto? (S/N): ').upper() != 'S':
-                    break
                     operation()
+                    break
             break
         else:
             print('\nOs dados estão incorretos. Tente novamente!')
 
-        # for i in purchases:
-        #     if i.category == (i+1).category: calcular o total de determinada categoria se tiver
-        #  dias compras em mercado por 10 reais cada, então print(Mercado: R$ 20.00)
-
+#gera o extrato mensal do cliente
 def bankStatement():
-    print('')
+    while True:
+
+        card = input('\nNúmero do seu cartão: ')
+        password = input('Senha: ')
+
+        client = getClient(card, password)
+        
+        if client:
+            
+            print('\nExtrato Mensal\n'+ client.credit_card)
+
+            print(f'length: {len(client.purchases)}')
+
+            for obj in client.purchases:
+                print(client.name)
+                
+                print(f'{obj.category} - R${obj.value:.2f} - {obj.date}')
+            
+            print(f'\nCrédito Gasto: R${client.monthly_limit - client.available_credit:.2f}')
+            print(f'Crédito Restante: R${client.available_credit:.2f}')
+
+            operation()
+            break
 
 operation()
