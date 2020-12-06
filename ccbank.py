@@ -1,26 +1,39 @@
 import random
 
-#fazer verificação da senha | extrato | fazer opção de alterar dados (renda e etc)
-#fazer abstração de codigo na parte de getClient()
-
-class Client:
-    name = ''
-    phone = ''
-    cpf = ''
-    income = 0.0
-    credit_card = ''
-    monthly_limit = 0.0
-    available_credit = 0.0
-    password = ''
-    purchases = []
-
-    def addPurchase(self, obj):
-        purchases.append(obj)
+#fazer verificação da senha | fazer opção de alterar dados (renda e etc)
+#fazer abstração de codigo na parte da class Client
 
 class Purchase:
     category = ''
     value = 0.0
     date = ''
+
+class Client:
+    def __init__(self, name, phone, cpf, income, credit_card, monthly_limit, available_credit, password):
+        self.name = name
+        self.phone = phone
+        self.cpf = cpf
+        self.income = income
+        self.credit_card = credit_card
+        self.monthly_limit = monthly_limit
+        self.available_credit = available_credit
+        self.password = password
+        self.purchases = []
+
+    def addPurchase(self, purchase):
+        self.purchases.append(purchase)
+
+    def printData(self):
+        print(f'\nNome: {self.name}')
+        print(f'CPF: {self.cpf}')
+        print(f'Nº do cartão: {self.credit_card}')
+        print(f'Nº do telefone: {self.phone}\n')
+
+    def getCard(self):
+        return self.credit_card
+
+    def getPassword(self):
+        return self.password
 
 admin_user = ''
 admin_password = ''
@@ -122,24 +135,24 @@ def registration():
             print(f'\nEntrou como administrador ({admin_user})')
             print('\nDigite os dados para o cadastro do cartão!')
 
-            client = Client()
+            name = input('\nNome Completo: ')
+            phone = input('Nº de Telefone: ')
+            cpf = input('CPF: ')
+            income = float(input('Renda Mensal (R$): '))
+            password = input('Senha: ') 
 
-            client.name = input('\nNome Completo: ')
-            client.phone = input('Nº de Telefone: ')
-            client.cpf = input('CPF: ')
-            client.income = float(input('Renda Mensal (R$): '))
-            client.password = input('Senha: ') 
-
-            if validateCPF(client.cpf):
+            if validateCPF(cpf):
                 print('\nCadastro realizado com sucesso!')
 
-                client.credit_card = creditCardGenerator()
-                client.monthly_limit = client.income * 0.85 #crédito mensal é igual a 85% da renda mensal
-                client.available_credit = client.monthly_limit
+                credit_card = creditCardGenerator()
+                monthly_limit = income * 0.85 #crédito mensal é igual a 85% da renda mensal
+                available_credit = monthly_limit
 
+                client = Client(name, phone, cpf, income, credit_card, monthly_limit, available_credit, password)
+                    
                 clients.append(client)
 
-                print(f'\nNúmero do Cartão: {client.credit_card}\nLimite de Crédito: R${client.monthly_limit:.2f}')
+                print(f'\nNúmero do Cartão: {credit_card}\nLimite de Crédito: R${monthly_limit:.2f}')
 
                 operation()
 
@@ -148,13 +161,12 @@ def registration():
         else:
             print('\nUsuário ou senha do administrador incorretos!')
 
-#
 def getClient(card, psw):
     for obj in clients:
-        if obj.credit_card == card:
-            if obj.password == psw:
+        if obj.getCard() == card:
+            if obj.getPassword() == psw:
                 return obj
-    return False
+    #return False
             
 #registra os custos mensais do cliente
 def monthlyPurchases():
@@ -169,12 +181,15 @@ def monthlyPurchases():
         
         if client:
             
+            print('\nDespesas Mensais')
+
+            client.printData()
+            
             #faz com que o user não precise repetir o processo de login, caso adicione um custo na sequência da outra
             while True:
-
                 purchase = Purchase()
 
-                purchase.category = input('\nCategoria: ')
+                purchase.category = input('Categoria: ')
 
                 while True:
                     purchase.value = abs(float(input('Valor: R$')))
@@ -186,13 +201,12 @@ def monthlyPurchases():
                         break
 
                     else:
-                        print('\nCrédito Insuficiente!')
+                        print('\nCrédito Insuficiente!\n')
                         
                 
                 print(f'\nCrédito Atual: R$ {client.available_credit:.2f}')
 
-                print(client.name)
-                client.purchases.append(purchase)
+                client.addPurchase(purchase)
 
                 if input('\nDeseja adicionar mais algum gasto? (S/N): ').upper() != 'S':
                     operation()
@@ -212,16 +226,15 @@ def bankStatement():
         
         if client:
             
-            print('\nExtrato Mensal\n'+ client.credit_card)
+            print('\nExtrato Mensal')
 
-            print(f'length: {len(client.purchases)}')
+            client.printData()
 
-            for obj in client.purchases:
-                print(client.name)
-                
-                print(f'{obj.category} - R${obj.value:.2f} - {obj.date}')
+            for obj in client.purchases:                
+                print(f'{obj.category.capitalize()} - R${obj.value:.2f} - {obj.date}')
             
-            print(f'\nCrédito Gasto: R${client.monthly_limit - client.available_credit:.2f}')
+            print(f'\nCrédito Limite (mês): R${client.monthly_limit:.2f}')
+            print(f'Crédito Gasto: R${client.monthly_limit - client.available_credit:.2f}')
             print(f'Crédito Restante: R${client.available_credit:.2f}')
 
             operation()
