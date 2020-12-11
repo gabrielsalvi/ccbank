@@ -1,7 +1,8 @@
 import random
 
-#fazer verificação da senha | fazer opção de alterar dados (renda e etc)
-#fazer abstração de codigo na parte da class Client
+#fazer verificação da senha | fazer manutenção de alterar dados (renda e etc) | listar todos os clientes
+#verificar se cpf já está cadastrado | cadastrar adms | quando o user digitar algo invalido não repetir todo o processo de cadas
+#pedir se é vantagem criar client (data, arasa) ou client.set()
 
 class Purchase:
     category = ''
@@ -20,6 +21,57 @@ class Client:
         self.password = password
         self.purchases = []
 
+    def getName(self):
+        return self.name
+
+    def setName(self, name):
+        self.name = name
+
+    def getPhone(self):
+        return self.phone
+
+    def setPhone(self, phone):
+        self.phone = phone
+
+    def getCPF(self):
+        return self.cpf
+
+    def setCPF(self, cpf):
+        self.cpf = cpf    
+
+    def getIncome(self):
+        return self.income
+
+    def setIncome(self, income):
+        self.income = income
+
+    def getCreditCard(self):
+        return self.credit_card
+
+    def setCreditCard(self, credit_card):
+        self.credit_card = credit_card
+
+    def getMonthlyLimit(self):
+        return self.monthly_limit
+
+    def setMonthlyLimit(self, monthly_limit):
+        self.monthly_limit = monthly_limit    
+
+    def getAvailableCredit(self):
+        return self.available_credit
+
+    def setAvailableCredit(self, available_credit):
+        self.available_credit = available_credit
+
+    def getPassword(self):
+        return self.password
+
+    def setPassword(self, password):
+        self.password = password
+
+    def getPurchases(self):
+        return self.purchases
+
     def addPurchase(self, purchase):
         self.purchases.append(purchase)
 
@@ -29,16 +81,11 @@ class Client:
         print(f'Nº do cartão: {self.credit_card}')
         print(f'Nº do telefone: {self.phone}\n')
 
-    def getCard(self):
-        return self.credit_card
-
-    def getPassword(self):
-        return self.password
-
 admin_user = ''
 admin_password = ''
 
 clients = []
+all_credit_cards = []
 
 #verifica se o usuário deseja realizar uma operação bancária
 def operation():
@@ -52,7 +99,7 @@ def operation():
 
 #
 def getOption():
-    option = input('\nSelecione uma opção: \n|0| - Sair; |1| - Cadastro; |2| - Adicionar Custos; |3| - Extrato; - ')
+    option = input('\nSelecione uma opção: \n|0| - Sair; |1| - Cadastro; |2| - Adicionar Custos; |3| - Extrato; |4| - Alterar Dados;- ')
 
     if option == '0':
         print('\nPrograma Encerrado')
@@ -66,6 +113,9 @@ def getOption():
     
     elif option == '3':
         bankStatement()
+    
+    elif option == '4':
+        alterAccountData()
 
     else:
         print('\nDigite uma opção válida!')
@@ -112,11 +162,16 @@ def verifyData(client):
 
 def creditCardGenerator():
     
-    credit_card = ''
+    while True:
+        credit_card = ''
 
-    for i in range(16):
-        random_number = random.randint(0,9)
-        credit_card += str(random_number)
+        for i in range(16):
+            random_number = random.randint(0,9)
+            credit_card += str(random_number)
+
+        if credit_card not in all_credit_cards:
+            all_credit_cards.append(credit_card)
+            break
 
     return credit_card
 
@@ -139,12 +194,13 @@ def registration():
             phone = input('Nº de Telefone: ')
             cpf = input('CPF: ')
             income = float(input('Renda Mensal (R$): '))
-            password = input('Senha: ') 
+            password = input('Senha: ')
 
             if validateCPF(cpf):
                 print('\nCadastro realizado com sucesso!')
 
                 credit_card = creditCardGenerator()
+
                 monthly_limit = income * 0.85 #crédito mensal é igual a 85% da renda mensal
                 available_credit = monthly_limit
 
@@ -163,7 +219,7 @@ def registration():
 
 def getClient(card, psw):
     for obj in clients:
-        if obj.getCard() == card:
+        if obj.getCreditCard() == card:
             if obj.getPassword() == psw:
                 return obj
     #return False
@@ -239,5 +295,38 @@ def bankStatement():
 
             operation()
             break
+
+def alterAccountData():
+
+    while True:
+        card = input('\nNúmero do seu cartão: ')
+        password = input('Senha: ')
+
+        client = getClient(card, password)
+        
+        if client: 
+            name = input('\nNome Completo: ')
+            phone = input('Nº de Telefone: ')
+            cpf = input('CPF: ')
+            income = float(input('Renda Mensal (R$): '))
+            password = input('Senha: ')
+
+            alter = input('\nVocê tem certeza que deseja salvar as alterações? (S/N): ').upper()
+            
+            if alter == 'S':
+                client.setName(name)
+                client.setPhone(phone)
+                client.setCPF(cpf)
+                client.setIncome(income)
+                client.setPassword(password)
+
+                print('\nDados salvos com sucesso!')
+
+            operation()
+
+            break
+        else:
+            print('\nOs dados estão incorretos. Tente novamente!')
+    
 
 operation()
