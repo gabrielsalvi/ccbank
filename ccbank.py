@@ -79,7 +79,7 @@ class Client:
     
     def getKey(self):
         return self.key
-    
+
     def printData(self):
         print(f'\nNome: {self.name}')
         print(f'CPF: {self.cpf}')
@@ -830,4 +830,4 @@ def hashPassword(password, salt):
 login()
 
 cur.close()
-conn.close()    
+conn.close()
