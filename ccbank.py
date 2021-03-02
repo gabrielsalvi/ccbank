@@ -2,10 +2,8 @@ import psycopg2
 import random
 import hashlib
 import os
-import decimal
+from decimal import Decimal
 from database import conn, cur
-
-# converter quantias monetarias em duas casas decimais antes de gravar no db
 
 class Client:
     def __init__(self, client_id, name, cpf, phone, income, credit_card, monthly_limit, available_credit, salt, key):
@@ -17,8 +15,8 @@ class Client:
         self.credit_card = credit_card
         self.monthly_limit = monthly_limit
         self.available_credit = available_credit
-        self.salt = b''
-        self.key = b''
+        self.salt = salt
+        self.key = key
 
     def getId(self):
         return self.id
@@ -48,7 +46,7 @@ class Client:
         return self.income
 
     def setIncome(self, income):
-        self.income = decimal.Decimal(income)
+        self.income = Decimal(income)
 
     def getCreditCard(self):
         return self.credit_card
@@ -60,13 +58,13 @@ class Client:
         return self.monthly_limit
 
     def setMonthlyLimit(self, monthly_limit):
-        self.monthly_limit = decimal.Decimal(monthly_limit) 
+        self.monthly_limit = Decimal(monthly_limit) 
 
     def getAvailableCredit(self):
         return self.available_credit
 
     def setAvailableCredit(self, available_credit):
-        self.available_credit = decimal.Decimal(available_credit)
+        self.available_credit = Decimal(available_credit)
 
     def setSalt(self, salt):
         self.salt = salt
@@ -140,7 +138,7 @@ class Purchase:
         return self.price
 
     def setPrice(self, price):
-        self.price = decimal.Decimal(price)
+        self.price = Decimal(price)
 
     def getDate(self):
         return self.date
@@ -180,19 +178,19 @@ class Request:
         return self.new_income
 
     def setNewIncome(self, new_income):
-        self.new_income = decimal.Decimal(new_income)
+        self.new_income = Decimal(new_income)
 
     def getNewMonthlyLimit(self):
         return self.new_monthly_limit
 
     def setNewMonthlyLimit(self, new_monthly_limit):
-        self.new_monthly_limit = decimal.Decimal(new_monthly_limit)
+        self.new_monthly_limit = Decimal(new_monthly_limit)
 
     def getNewAvailableCredit(self):
         return self.new_available_credit
 
     def setNewAvailableCredit(self, new_available_credit):
-        self.new_available_credit = decimal.Decimal(new_available_credit)
+        self.new_available_credit = Decimal(new_available_credit)
 
     def getStatus(self):
         return self.status
@@ -304,7 +302,7 @@ def clientRegistration(admin):
         cpf = input('CPF: ')
 
         if validateCPF(cpf):
-            income = float(input('Renda Mensal (R$): '))
+            income = Decimal(float(input('Renda Mensal (R$): ')))
 
             while True:
                 password = input('Senha: ')
@@ -312,16 +310,13 @@ def clientRegistration(admin):
                 if validatePassword(password):
                     salt = os.urandom(32)
                     key = hashPassword(password, salt)
-                    
-                    print('salt', salt, 'key', key)
 
                     credit_card = creditCardGenerator()
-                    monthly_limit = income * 0.85
+                    monthly_limit = income * Decimal(0.85)
                     available_credit = monthly_limit
-                    status_request = ''
 
-                    cur.execute('''INSERT INTO client (name, cpf, phone, income, credit_card, monthly_limit, available_credit, status_request, salt, key_pass) VALUES 
-                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', (name, cpf, phone, income, credit_card, monthly_limit, available_credit, status_request, salt, key))
+                    cur.execute('''INSERT INTO client (name, cpf, phone, income, credit_card, monthly_limit, available_credit, salt, key_pass) VALUES 
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s)''', (name, cpf, phone, income, credit_card, monthly_limit, available_credit, salt, key))
 
                     conn.commit()
 
@@ -441,10 +436,10 @@ def checkRequests(admin):
 #retorna a requisição do cliente informado no parâmetro, ou -1 caso não encontre requisição daquele cliente
 def getRequestByClient(client):
     cur.execute(f"SELECT * FROM limit_increase_request WHERE client_id = {client.getId()}")
-    data = cur.fetchone()
+    request = cur.fetchone()
 
     if request is not None:
-        dictionary = returnRequestDictionary(data)
+        dictionary = returnRequestDictionary(request)
 
         request = Request(dictionary['id'], dictionary['client_id'], dictionary['admin_id'], dictionary['new_income'], 
             dictionary['new_monthly_limit'], dictionary['new_available_credit'], dictionary['status'])
@@ -475,7 +470,13 @@ def alterClientAccount(admin):
                     
                     if alter == 'S':
                         cur.execute(f"UPDATE client SET name = '{name}', phone = '{phone}', cpf = '{cpf}' WHERE client_id = {client.getId()};")
+                        
+                        conn.commit()
 
+                        cur.execute(f"Select * From client where client_id = {client.getId()};")
+                        select = cur.fetchone()
+
+                        print('select: ', select)
                         print('\nDados salvos com sucesso!')
                         break #quebra o segundo while
 
@@ -503,8 +504,9 @@ def deleteClient(admin):
             if delete == 'S':
                 request = getRequestByClient(client)
 
-                if request.getStatus() == 'análise':
-                    cur.execute(f"DELETE FROM limit_increase_request WHERE client_id = '{request.getClientId()}';")
+                if request != -1:
+                    if request.getStatus() == 'análise':
+                        cur.execute(f"DELETE FROM limit_increase_request WHERE client_id = '{request.getClientId()}';")
 
                 cur.execute(f"DELETE FROM client WHERE client_id = '{client.getId()}';")
                 conn.commit()
@@ -530,13 +532,13 @@ def monthlyPurchasesRegistration(client):
     while True:
         print('\nRegistre uma compra.')
 
-        available_credit = float(client.getAvailableCredit())
+        available_credit = client.getAvailableCredit()
 
         category = input('\nCategoria: ').capitalize()
 
         #enquanto o custo for menor que R$0.00, o custo não é registrado
         while True:
-            price = float(input('Valor: R$'))
+            price = Decimal(float(input('Valor: R$')))
             
             if price <= 0:
                 print('\nO valor da compra precisa ser maior que R$0.00')
@@ -586,8 +588,8 @@ def generateBankStatement(client):
     else:
         print('Não há nenhuma despesa registrada!')
 
-    limit = float(client.getMonthlyLimit())
-    available_credit = float(client.getAvailableCredit())
+    limit = client.getMonthlyLimit()
+    available_credit = client.getAvailableCredit()
 
     print(f'\nCrédito Limite (mês): R${limit:.2f}')
     print(f'Crédito Gasto: R${limit - available_credit:.2f}')
@@ -620,7 +622,7 @@ def changePassword(client):
             key = hashPassword(password, client.getSalt())
 
             saved_key = client.getKey()
-            
+
             if key == saved_key:
                 while True:
                     new_password = input('Nova senha: ')
@@ -694,9 +696,9 @@ def getAdmin(user, password):
 
     data = cur.fetchone()
 
-    dictionary = returnAdminDictionary(data)
-
     if data is not None:
+        dictionary = returnAdminDictionary(data)
+
         salt = bytes(dictionary['salt'])
         key = bytes(dictionary['key'])
 
@@ -714,11 +716,14 @@ def checkStatusRequest(client, status):
         print(f'\n{client.getName()}, requisite uma mudança no limite de crédito do seu cartão!')
 
         income = client.getIncome()
-        new_income = float(input('\nInsira sua renda mensal: R$'))
+        new_income = Decimal(float(input('\nInsira sua renda mensal: R$')))
         
         if new_income != income:
-            new_monthly_limit = decimal.Decimal(new_income * 0.85)
+            new_monthly_limit = new_income * Decimal(0.85)
             new_available_credit = client.getAvailableCredit() + (new_monthly_limit - client.getMonthlyLimit())
+
+            print('new available credit type:', type(new_available_credit))
+
             status = 'análise'
 
             if new_available_credit > 0:
