@@ -1,4 +1,4 @@
-# Credit Card System <br>
+# Credit Card System <br><br>
 
 ## Tecnologies used:
 
@@ -17,7 +17,7 @@ The **administrator** is capable of:
 * Register other administrators;
 * Register, alter and delete clients;
 * See a list of all the clients;
-* Decide to approval or deny a limit change request made by a client. <br>
+* Decide to approval or deny a limit change request made by a client. <br><br>
 
 The **client** is capable of:
 * Add expenses and/or purchases;
@@ -40,18 +40,18 @@ The **client** is capable of:
 * Work with monetary values in a proper way;
 * Handle with passwords: The code generates a unique salt for every password. After that, it encrypts the password with a PBKDF2_HMAC method, generating a key. So, the database only stores the sault and the key, not the password. See it below:<br>
 
-	import os <br>
+	```python
+	import os
 	import hashlib
 
 	salt = os.urandom(32)
 
-	key = hashlib.pbkdf2_hmac( <br>
-      'sha256', # the hash digest algorithm for HMAC <br>
-      password.encode('utf-8'),  # convert the password to bytes <br>
-      salt, <br>
-      100000,  # number of iterations of SHA-256 (recommended to use at least 				100,000) <br>
-) <br><br>
-
+	key = hashlib.pbkdf2_hmac(
+      'sha256', # the hash digest algorithm for HMAC
+      password.encode('utf-8'),  # convert the password to bytes
+      salt,
+      100000,  # number of iterations of SHA-256 (recommended to use at least 100,000)
+	)
 * How to use classes;
 * How to use dictionaries; <br><br>
 
