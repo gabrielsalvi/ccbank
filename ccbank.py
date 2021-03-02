@@ -470,13 +470,8 @@ def alterClientAccount(admin):
                     
                     if alter == 'S':
                         cur.execute(f"UPDATE client SET name = '{name}', phone = '{phone}', cpf = '{cpf}' WHERE client_id = {client.getId()};")
-                        
                         conn.commit()
-
-                        cur.execute(f"Select * From client where client_id = {client.getId()};")
-                        select = cur.fetchone()
-
-                        print('select: ', select)
+                        
                         print('\nDados salvos com sucesso!')
                         break #quebra o segundo while
 
