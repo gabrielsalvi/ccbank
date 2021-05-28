@@ -25,7 +25,7 @@ The **client** is capable of:
 * Request a new monthly credit limit;
 * Change his password;<br><br>
 
-## What I've learned Working With This Project:
+## What I've learned Working on this project:
 
 ---
 
@@ -48,7 +48,7 @@ The **client** is capable of:
 * How to use classes;
 * How to use dictionaries; <br><br>
 
-## Additional Information:
+## Additional information:
 
 ---
 
