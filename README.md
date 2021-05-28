@@ -25,13 +25,6 @@ The **client** is capable of:
 * Request a new monthly credit limit;
 * Change his password;<br><br>
 
-## Upcoming features:
-
----
-
-* Improve the organization of the files and the code, implementing an OO approach;
-* Develop a basic front-end application to this project, with HTML, CSS, and Javascript.<br><br>
-
 ## What I've learned Working With This Project:
 
 ---
