@@ -31,7 +31,7 @@ The **client** is capable of:
 
 * Integrate Python and PostgreSQL using Psycopg;
 * Work with monetary values in a proper way;
-* Handle with passwords: The code generates a unique salt for every password. After that, it encrypts the password with a PBKDF2_HMAC method, generating a key. So, the database only stores the sault and the key, not the password. See it below:<br>
+* Handle passwords: The code generates a unique salt for every password. After that, it encrypts the password with a PBKDF2_HMAC method, generating a key. So, the database only stores the sault and the key, not the password. See it below:<br>
 
 	```python
 	import os
